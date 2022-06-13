@@ -3,10 +3,10 @@ import Script from 'next/script'
 import React, { useRef } from 'react'
 
 // override default console.log to capture print() calls
-let redirectToTerminal = null
+let writeToTerminal = null
 const log = console.log
 console.log = (...args) => {
-  if (redirectToTerminal) redirectToTerminal(...args)
+  if (writeToTerminal) writeToTerminal(...args)
   log(...args)
 }
 
@@ -25,9 +25,6 @@ export default function Home() {
             const terminal = new Terminal()
             terminal.open(document.getElementById('terminal'), false)
 
-            // attach function
-            redirectToTerminal = (...args) => terminal.writeln(args.join(' '))
-
             // init pyodide
             const pyodide = await loadPyodide()
             pyodideRef.current = pyodide
@@ -37,6 +34,9 @@ export default function Home() {
                   import sys
                   sys.version
                 `)
+
+            // attach function
+            writeToTerminal = (...args) => terminal.writeln(args.join(' '))
           }
           load()
         }}
@@ -50,15 +50,14 @@ export default function Home() {
           editor.addCommand(
             monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
             () => {
-              // run python code
               const pyodide = pyodideRef.current
 
-              // check if pyodide is ready
               if (!pyodide) return
 
-              // get the code
+              // get & run the code
               const code = editor.getValue()
-              pyodide.runPython(code)
+              const output = pyodide.runPython(code)
+              if (output) writeToTerminal(output.toString())
             }
           )
         }}

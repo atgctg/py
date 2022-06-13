@@ -1,5 +1,5 @@
 import '../styles/globals.css'
-import '../styles/xterm.css'
+import 'xterm/css/xterm.css'
 
 function MyApp({ Component, pageProps }) {
   return <Component {...pageProps} />
